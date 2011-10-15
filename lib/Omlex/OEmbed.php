@@ -94,17 +94,12 @@ class OEmbed
      *
      * @param string $url     The URL to fetch from
      * @param array  $options A list of options
-     *
-     * @throws \InvalidArgumentException If the URL is invalid
      */
-    public function __construct($url, array $options = array())
+    public function __construct($url = null, array $options = array())
     {
-        $info = parse_url($url);
-        if (false === $info) {
-            throw new \InvalidArgumentException(sprintf('The URL "%s" is invalid.', $url));
+        if ($url) {
+            $this->setURL($url);
         }
-
-        $this->url = $url;
 
         if (count($options)) {
             foreach ($options as $key => $val) {
@@ -112,9 +107,26 @@ class OEmbed
             }
         }
 
-        if ($this->options[self::OPTION_API] === null) {
+        if ($this->url && $this->options[self::OPTION_API] === null) {
             $this->options[self::OPTION_API] = $this->discover($url);
         } 
+    }
+
+    /**
+     * Set a URL to fetch from
+     * 
+     * @param string $url The URL to fetch from
+     *
+     * @throws \InvalidArgumentException If the URL is invalid
+     */
+    public function setURL($url)
+    {
+        $info = parse_url($url);
+        if (false === $info) {
+            throw new \InvalidArgumentException(sprintf('The URL "%s" is invalid.', $url));
+        }
+
+        $this->url = $url;
     }
 
     /**
@@ -129,6 +141,13 @@ class OEmbed
     {
         switch ($option) {
             case self::OPTION_API:
+                $info = parse_url($value);
+                if (false === $info) {
+                    throw new \InvalidArgumentException(sprintf('The URL "%s" is invalid.', $value));
+                }
+
+                break;
+
             case self::OPTION_TIMEOUT:
                 break;
 
@@ -151,8 +170,15 @@ class OEmbed
      */
     public function getObject(array $parameters = array())
     {
-        $sign = '?';
+        if ($this->url === null) {
+            throw new \InvalidArgumentException('Missing URL.');
+        } 
 
+        if ($this->options[self::OPTION_API] === null) {
+            $this->options[self::OPTION_API] = $this->discover($this->url);
+        } 
+
+        $sign = '?';
         if ($query = parse_url($this->options[self::OPTION_API], PHP_URL_QUERY)) {
             $sign = '&';
 
