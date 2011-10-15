@@ -38,23 +38,25 @@ abstract class Object
      *
      * @param object $object Raw object returned from API
      *
-     * @throws ObjectException on object error
      * @return object Instance of object driver
+     *
+     * @throws ObjectException    On object errors
+     * @throws NoSupportException When object type is not supported or unknown
      */
     static public function factory($object)
     {
         if (!isset($object->type)) {
-            throw new ObjectException('Object has no type');
+            throw new ObjectException('The object has no type.');
         }
 
         $type = (string)$object->type;
         if (!isset(self::$types[$type])) {
-            throw new NoSupportException(sprint('Object type is unknown or invalid: %s', $type));
+            throw new NoSupportException(sprintf('The object type "%s" is unknown or invalid.', $type));
         }
 
         $class = '\\Omlex\\Object\\'.self::$types[$type];
         if (!class_exists($class)) {
-            throw new ObjectException('Object class is invalid or not found');
+            throw new ObjectException(sprintf('The object class "%s" is invalid or not found.', $class));
         }
 
         $instance = new $class($object);
@@ -63,8 +65,6 @@ abstract class Object
 
     /**
      * Instantiation is not allowed
-     *
-     * @return void
      */
     private function __construct()
     {

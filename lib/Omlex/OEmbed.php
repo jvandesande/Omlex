@@ -11,9 +11,6 @@
 
 namespace Omlex;
 
-use Omlex\Exception\Exception;
-use Omlex\Exception\NoSupportException;
-
 /**
  * Base class for consuming objects
  *
@@ -98,9 +95,7 @@ class OEmbed
      * @param string $url     The URL to fetch from
      * @param array  $options A list of options
      *
-     * @throws InvalidArgumentException If the URL is invalid
-     * @throws Exception when no valid API is found
-     * @return void
+     * @throws \InvalidArgumentException If the URL is invalid
      */
     public function __construct($url, array $options = array())
     {
@@ -128,8 +123,7 @@ class OEmbed
      * @param mixed $option The option name
      * @param mixed $value  The option value
      *
-     * @throws Exception on invalid option
-     * @return void
+     * @throws \InvalidArgumentException If the option is invalid
      */
     public function setOption($option, $value)
     {
@@ -139,7 +133,7 @@ class OEmbed
                 break;
 
             default:
-                throw new Exception(sprintf('Invalid option "%s"', $option));
+                throw new \InvalidArgumentException(sprintf('The option "%s" is invalid.', $option));
         }
 
         $this->options[$option] = $value;
@@ -149,11 +143,11 @@ class OEmbed
      * Get the oEmbed response
      *
      * @param array $params Optional parameters for 
-     * 
-     * @throws Exception on cURL errors
-     * @throws Exception on HTTP errors
-     * @throws Exception when result is not parsable 
+     *
      * @return object The oEmbed response as an object
+     * 
+     * @throws \RuntimeException         On HTTP errors
+     * @throws \InvalidArgumentException when result is not parsable 
      */
     public function getObject(array $parameters = array())
     {
@@ -172,33 +166,15 @@ class OEmbed
             $parameters['format'] = 'json';
         }
 
-        $url = sprintf('%s%s%s', $this->options[self::OPTION_API], $sign, http_build_query($parameters));
-
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_HEADER, false);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->options[self::OPTION_TIMEOUT]);
-        $result = curl_exec($ch);
-
-        if (curl_errno($ch)) {
-            throw new Exception(
-                curl_error($ch), curl_errno($ch)
-            );
-        }
-
-        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        if ($code != 200) {
-            throw new Exception('Non-200 code returned');
-        }
-
-        curl_close($ch);
+        $result = $this->sendRequest(
+            sprintf('%s%s%s', $this->options[self::OPTION_API], $sign, http_build_query($parameters))
+        );
 
         switch ($parameters['format']) {
             case 'json':
                 $result = json_decode($result);
                 if (!is_object($result)) {
-                    throw new Exception('Could not parse JSON response');
+                    throw new \InvalidArgumentException('Could not parse JSON response.');
                 }
 
                 break;
@@ -211,7 +187,7 @@ class OEmbed
                     $error  = array_shift($errors);
                     libxml_clear_errors();
                     libxml_use_internal_errors(false);
-                    throw new Exception($error->message, $error->code);
+                    throw new \InvalidArgumentException($error->message, $error->code);
                 }
 
                 break;
@@ -225,8 +201,9 @@ class OEmbed
      *
      * @param string $url The URL to attempt to discover Omlex for
      *
-     * @throws NoSupportException if the $url is invalid
      * @return string The oEmbed API endpoint discovered
+     *
+     * @throws \InvalidArgumentException If the $url is invalid
      */
     protected function discover($url)
     {
@@ -239,7 +216,7 @@ class OEmbed
 
         $matches = $result = array();
         if (!preg_match_all($regexp, $body, $matches)) {
-            throw new NoSupportException('No valid oEmbed links found on page');
+            throw new \InvalidArgumentException('No valid oEmbed links found on page.');
         }
 
         foreach ($matches[0] as $key => $link) {
@@ -256,9 +233,11 @@ class OEmbed
      * Send a GET request to the provider
      * 
      * @param mixed $url The URL to send the request to
+     * @return object The oEmbed response as an object
      *
-     * @throws Exception on HTTP errors
      * @return string The contents of the response
+     *
+     * @throws \RuntimeException On HTTP errors
      */
     private function sendRequest($url)
     {
@@ -271,15 +250,15 @@ class OEmbed
         $result = curl_exec($ch);
 
         if (curl_errno($ch)) {
-            throw new Exception(
-                curl_error($ch), curl_errno($ch)
-            );
+            throw new \RuntimeException(curl_error($ch), curl_errno($ch));
         }
 
         $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         if ($code != 200) {
-            throw new Exception('Non-200 code returned');
+            throw new \RuntimeException('Non-200 code returned.');
         }
+
+        curl_close($ch);
 
         return $result;
     }
