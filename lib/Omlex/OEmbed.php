@@ -234,7 +234,7 @@ class OEmbed
 
         // Find all <link /> tags that have a valid oembed type set. We then
         // extract the href attribute for each type.
-        $regexp = '#<link([^>]*)type="'.
+        $regexp = '#<link([^>]*)type=[^"]*"'.
                   '(application/json|text/xml)\+oembed"([^>]*)>#i';
 
         $matches = $result = array();
@@ -244,7 +244,7 @@ class OEmbed
 
         foreach ($matches[0] as $key => $link) {
             $hrefs = array();
-            if (preg_match('/href="([^"]+?)"/i', $link, $hrefs)) {
+            if (preg_match('/href=[^"]*"([^"]+)"/i', $link, $hrefs)) {
                 $result[$matches[2][$key]] = $hrefs[1];
             }
         } 
