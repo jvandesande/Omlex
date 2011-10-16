@@ -40,27 +40,6 @@ namespace Omlex;
 class OEmbed
 {
     /**
-     * HTTP timeout in seconds
-     * 
-     * All HTTP requests made will respect this timeout. 
-     * This can be passed to {@link OEmbed::setOption()} or to
-     * the options parameter in {@link OEmbed::__construct()}.
-     * 
-     * @var string
-     */
-    const OPTION_TIMEOUT = 'http_timeout';
-
-    /**
-     * HTTP User-Agent 
-     *
-     * All HTTP requests made will be sent with the string
-     * set by this option.
-     *
-     * @var string
-     */
-    const OPTION_USER_AGENT = 'http_user_agent';
-
-    /**
      * The API's URI
      *
      * If the API is known ahead of time this option can be used to explicitly
@@ -69,18 +48,7 @@ class OEmbed
      *
      * @var string
      */
-    const OPTION_API = 'oembed_api';
-
-    /**
-     * Options for Omlex requests
-     *
-     * @var array
-     */
-    protected $options = array(
-        self::OPTION_TIMEOUT    => 3,
-        self::OPTION_API        => null,
-        self::OPTION_USER_AGENT => 'OEmbed @package-version@'
-    );
+    protected $api = null;
 
     /**
      * URL of object to get embed information for
@@ -92,24 +60,22 @@ class OEmbed
     /**
      * Constructor
      *
-     * @param string $url     The URL to fetch from
-     * @param array  $options A list of options
+     * @param string $url The URL to fetch from
+     * @param string $api The API URI
      */
-    public function __construct($url = null, array $options = array())
+    public function __construct($url = null, $api = null)
     {
         if ($url) {
             $this->setURL($url);
         }
 
-        if (count($options)) {
-            foreach ($options as $key => $val) {
-                $this->setOption($key, $val);
-            }
+        if ($api && $this->validateURL($api)) {
+            $this->api = $api;
         }
 
-        if ($this->url && $this->options[self::OPTION_API] === null) {
-            $this->options[self::OPTION_API] = $this->discover($url);
-        } 
+        if ($this->url && $this->api === null) {
+            $this->api = $this->discover($url);
+        }
     }
 
     /**
@@ -121,8 +87,7 @@ class OEmbed
      */
     public function setURL($url)
     {
-        $info = parse_url($url);
-        if (false === $info) {
+        if (!$this->validateURL($url)) {
             throw new \InvalidArgumentException(sprintf('The URL "%s" is invalid.', $url));
         }
 
@@ -130,32 +95,20 @@ class OEmbed
     }
 
     /**
-     * Set an option for the request
+     * Validate a URL
      * 
-     * @param mixed $option The option name
-     * @param mixed $value  The option value
+     * @param string $url The URL
      *
-     * @throws \InvalidArgumentException If the option is invalid
+     * @return Boolean True if valid, false if not
      */
-    public function setOption($option, $value)
+    public function validateURL($url)
     {
-        switch ($option) {
-            case self::OPTION_API:
-                $info = parse_url($value);
-                if (false === $info) {
-                    throw new \InvalidArgumentException(sprintf('The URL "%s" is invalid.', $value));
-                }
-
-                break;
-
-            case self::OPTION_TIMEOUT:
-                break;
-
-            default:
-                throw new \InvalidArgumentException(sprintf('The option "%s" is invalid.', $option));
+        $info = parse_url($url);
+        if (false === $info) {
+            return false;
         }
 
-        $this->options[$option] = $value;
+        return true;
     }
 
     /**
@@ -172,14 +125,14 @@ class OEmbed
     {
         if ($this->url === null) {
             throw new \InvalidArgumentException('Missing URL.');
-        } 
+        }
 
-        if ($this->options[self::OPTION_API] === null) {
-            $this->options[self::OPTION_API] = $this->discover($this->url);
-        } 
+        if ($this->api === null) {
+            $this->api = $this->discover($this->url);
+        }
 
         $sign = '?';
-        if ($query = parse_url($this->options[self::OPTION_API], PHP_URL_QUERY)) {
+        if ($query = parse_url($this->api, PHP_URL_QUERY)) {
             $sign = '&';
 
             parse_str($query, $parameters);
@@ -192,14 +145,16 @@ class OEmbed
             $parameters['format'] = 'json';
         }
 
-        $result = $this->sendRequest(
-            sprintf('%s%s%s', $this->options[self::OPTION_API], $sign, http_build_query($parameters))
+        $client = new Client(
+            sprintf('%s%s%s', $this->api, $sign, http_build_query($parameters))
         );
+
+        $data = $client->send();
 
         switch ($parameters['format']) {
             case 'json':
-                $result = json_decode($result);
-                if (!is_object($result)) {
+                $data = json_decode($data);
+                if (!is_object($data)) {
                     throw new \InvalidArgumentException('Could not parse JSON response.');
                 }
 
@@ -207,8 +162,8 @@ class OEmbed
 
             case 'xml':
                 libxml_use_internal_errors(true);
-                $result = simplexml_load_string($result);
-                if (!$result instanceof SimpleXMLElement) {
+                $data = simplexml_load_string($data);
+                if (!$data instanceof SimpleXMLElement) {
                     $errors = libxml_get_errors();
                     $error  = array_shift($errors);
                     libxml_clear_errors();
@@ -219,7 +174,7 @@ class OEmbed
                 break;
         }
 
-        return Object::factory($result);
+        return Object::factory($data);
     }
 
     /**
@@ -233,7 +188,9 @@ class OEmbed
      */
     protected function discover($url)
     {
-        $body = $this->sendRequest($url);
+        $client = new Client($url);
+
+        $body = $client->send();
 
         // Find all <link /> tags that have a valid oembed type set. We then
         // extract the href attribute for each type.
@@ -250,42 +207,8 @@ class OEmbed
             if (preg_match('/href=[^"]*"([^"]+)"/i', $link, $hrefs)) {
                 $result[$matches[2][$key]] = $hrefs[1];
             }
-        } 
+        }
 
         return (isset($result['application/json']) ? $result['application/json'] : array_pop($result));
-    }
-
-    /**
-     * Send a GET request to the provider
-     * 
-     * @param mixed $url The URL to send the request to
-     * @return object The oEmbed response as an object
-     *
-     * @return string The contents of the response
-     *
-     * @throws \RuntimeException On HTTP errors
-     */
-    private function sendRequest($url)
-    {
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_HEADER, false);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->options[self::OPTION_TIMEOUT]);
-        curl_setopt($ch, CURLOPT_USERAGENT, $this->options[self::OPTION_USER_AGENT]);
-        $result = curl_exec($ch);
-
-        if (curl_errno($ch)) {
-            throw new \RuntimeException(curl_error($ch), curl_errno($ch));
-        }
-
-        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        if ($code != 200) {
-            throw new \RuntimeException('Non-200 code returned.');
-        }
-
-        curl_close($ch);
-
-        return $result;
     }
 }
