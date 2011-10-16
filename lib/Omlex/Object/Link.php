@@ -13,7 +13,7 @@ namespace Omlex\Object;
 
 /**
  * Link object.
- * 
+ *
  * @author Michael H. Arieli <excelwebzone@gmail.com>
  */
 class Link extends Common

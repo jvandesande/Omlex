@@ -13,7 +13,7 @@ namespace Omlex\Object;
 
 /**
  * Video object.
- * 
+ *
  * @author Michael H. Arieli <excelwebzone@gmail.com>
  */
 class Video extends Common
@@ -21,7 +21,7 @@ class Video extends Common
     protected $required = array(
         'html', 'width', 'height'
     );
- 
+
     /**
      * {@inheritdoc}
      */

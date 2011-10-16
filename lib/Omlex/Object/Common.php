@@ -15,7 +15,7 @@ use Omlex\Exception\ObjectException;
 
 /**
  * Base class for objects.
- * 
+ *
  * @author Michael H. Arieli <excelwebzone@gmail.com>
  */
 abstract class Common
@@ -40,7 +40,6 @@ abstract class Common
      * @param object $object Raw object returned from the API
      *
      * @throws ObjectException on missing fields
-     * @return void
      */
     public function __construct($object)
     {
@@ -75,8 +74,8 @@ abstract class Common
      * Is variable set?
      *
      * @param string $var Variable name to check
-     * 
-     * @return boolean True if set, false if not
+     *
+     * @return Boolean True if set, false if not
      */
     public function __isset($var)
     {

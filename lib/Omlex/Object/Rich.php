@@ -13,7 +13,7 @@ namespace Omlex\Object;
 
 /**
  * Rich object.
- * 
+ *
  * @author Michael H. Arieli <excelwebzone@gmail.com>
  */
 class Rich extends Common
@@ -21,7 +21,7 @@ class Rich extends Common
     protected $required = array(
         'html', 'width', 'height'
     );
- 
+
     /**
      * {@inheritdoc}
      */

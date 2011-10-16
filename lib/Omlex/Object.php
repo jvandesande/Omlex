@@ -16,7 +16,7 @@ use Omlex\Exception\ObjectException;
 
 /**
  * Base class for consuming Omlex objects.
- * 
+ *
  * @author Michael H. Arieli <excelwebzone@gmail.com>
  */
 abstract class Object

@@ -13,7 +13,7 @@ namespace Omlex\Exception;
 
 /**
  * Exception for {@see Object}.
- * 
+ *
  * @author Michael H. Arieli <excelwebzone@gmail.com>
  */
 class ObjectException extends Exception

@@ -13,7 +13,7 @@ namespace Omlex\Exception;
 
 /**
  * Base exception class.
- * 
+ *
  * @author Michael H. Arieli <excelwebzone@gmail.com>
  */
 class Exception extends \Exception

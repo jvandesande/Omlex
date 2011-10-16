@@ -75,7 +75,7 @@ class OEmbedTest extends \PHPUnit_Framework_TestCase
             $expectedObject = '\\Omlex\\Object\\' . ucfirst($type);
             $this->assertEquals($expectedObject, get_class($object));
 
-            foreach ($test['expected'] as $key => $val) { 
+            foreach ($test['expected'] as $key => $val) {
                 $this->assertEquals($val, $object->$key, sprintf('Unexpected %s value for object type %s', $key, $type));
             }
         }

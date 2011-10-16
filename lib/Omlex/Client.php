@@ -13,7 +13,7 @@ namespace Omlex;
 
 /**
  * Client simulates a browser.
- * 
+ *
  * @author Michael H. Arieli <excelwebzone@gmail.com>
  */
 class Client
@@ -35,7 +35,7 @@ class Client
 
     /**
      * Send a GET request
-     * 
+     *
      * @return string The contents of the response
      *
      * @throws \RuntimeException On HTTP errors

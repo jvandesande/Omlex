@@ -13,7 +13,7 @@ namespace Omlex\Object;
 
 /**
  * Photo object.
- * 
+ *
  * @author Michael H. Arieli <excelwebzone@gmail.com>
  */
 class Photo extends Common
@@ -21,7 +21,7 @@ class Photo extends Common
     protected $required = array(
         'url', 'width', 'height'
     );
- 
+
     /**
      * {@inheritdoc}
      */

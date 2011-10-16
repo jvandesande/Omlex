@@ -16,7 +16,7 @@ namespace Omlex;
  *
  * <code>
  * <?php
- * 
+ *
  * // The URL that we'd like to find out more information about.
  * $url = 'http://www.flickr.com/photos/24887479@N06/2656764466/';
  *
@@ -31,10 +31,10 @@ namespace Omlex;
  * // All of the objects have somewhat sane __toString() methods that allow
  * // you to output them directly.
  * echo (string)$object;
- * 
+ *
  * ?>
- * </code> 
- * 
+ * </code>
+ *
  * @author Michael H. Arieli <excelwebzone@gmail.com>
  */
 class OEmbed
@@ -43,7 +43,7 @@ class OEmbed
      * The API's URI
      *
      * If the API is known ahead of time this option can be used to explicitly
-     * set it. If not present then the API is attempted to be discovered 
+     * set it. If not present then the API is attempted to be discovered
      * through the auto-discovery mechanism.
      *
      * @var string
@@ -80,7 +80,7 @@ class OEmbed
 
     /**
      * Set a URL to fetch from
-     * 
+     *
      * @param string $url The URL to fetch from
      *
      * @throws \InvalidArgumentException If the URL is invalid
@@ -96,7 +96,7 @@ class OEmbed
 
     /**
      * Validate a URL
-     * 
+     *
      * @param string $url The URL
      *
      * @return Boolean True if valid, false if not
@@ -114,12 +114,12 @@ class OEmbed
     /**
      * Get the oEmbed response
      *
-     * @param array $params Optional parameters for 
+     * @param array $params Optional parameters for
      *
      * @return object The oEmbed response as an object
-     * 
+     *
      * @throws \RuntimeException         On HTTP errors
-     * @throws \InvalidArgumentException when result is not parsable 
+     * @throws \InvalidArgumentException when result is not parsable
      */
     public function getObject(array $parameters = array())
     {
@@ -178,7 +178,7 @@ class OEmbed
     }
 
     /**
-     * Discover an oEmbed API 
+     * Discover an oEmbed API
      *
      * @param string $url The URL to attempt to discover Omlex for
      *

@@ -13,7 +13,7 @@ namespace Omlex\Exception;
 
 /**
  * Exception, is thrown when no object support is discovered.
- * 
+ *
  * @author Michael H. Arieli <excelwebzone@gmail.com>
  */
 class NoSupportException extends Exception
