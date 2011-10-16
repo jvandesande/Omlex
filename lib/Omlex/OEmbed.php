@@ -11,6 +11,8 @@
 
 namespace Omlex;
 
+use Omlex\Provider;
+
 /**
  * Base class for consuming objects
  *
@@ -23,9 +25,7 @@ namespace Omlex;
  * // The oEmbed API URI. Not all providers support discovery yet so we're
  * // explicitly providing one here. If one is not provided OEmbed
  * // attempts to discover it. If none is found an exception is thrown.
- * $oEmbed = new Omlex\OEmbed($url, array(
- *     OEmbed::OPTION_API => 'http://www.flickr.com/services/oembed/'
- * ));
+ * $oEmbed = new Omlex\OEmbed($url, 'http://www.flickr.com/services/oembed/');
  * $object = $oEmbed->getObject();
  *
  * // All of the objects have somewhat sane __toString() methods that allow
@@ -48,33 +48,48 @@ class OEmbed
      *
      * @var string
      */
-    protected $api = null;
+    protected $endpoint = null;
 
     /**
      * URL of object to get embed information for
      *
-     * @var object
+     * @var string
      */
     protected $url = null;
 
     /**
+     * Providers
+     *
+     * @var array
+     */
+    protected $providers = array();
+
+    /**
      * Constructor
      *
-     * @param string $url The URL to fetch from
-     * @param string $api The API URI
+     * @param string $url       The URL to fetch from
+     * @param string $endpoint  The API endpoint
+     * @param array  $providers Additional providers
      */
-    public function __construct($url = null, $api = null)
+    public function __construct($url = null, $endpoint = null, array $providers = array())
     {
         if ($url) {
             $this->setURL($url);
         }
 
-        if ($api && $this->validateURL($api)) {
-            $this->api = $api;
+        if ($endpoint && $this->validateURL($endpoint)) {
+            $this->endpoint = $endpoint;
         }
 
-        if ($this->url && $this->api === null) {
-            $this->api = $this->discover($url);
+        $this->providers = array(
+            new Provider\YouTube(),
+            new Provider\Flickr(),
+        );
+
+        foreach ($providers as $provider) {
+            if (is_array($provider) || $provider instanceof Provider) {
+                $this->addProvider($provider);
+            }
         }
     }
 
@@ -92,6 +107,27 @@ class OEmbed
         }
 
         $this->url = $url;
+    }
+
+    /**
+     * Add provider
+     *
+     * @param mix $provider The provider
+     */
+    public function addProvider($provider)
+    {
+        if ($provider instanceof Provider) {
+            $this->providers[] = $provider;
+        }
+
+        if (is_array($provider)) {
+            $this->providers[] = new Provider(
+                $provider['endpoint'],
+                $provider['schemes'],
+                $provider['url'],
+                $provider['name']
+            );
+        }
     }
 
     /**
@@ -127,12 +163,12 @@ class OEmbed
             throw new \InvalidArgumentException('Missing URL.');
         }
 
-        if ($this->api === null) {
-            $this->api = $this->discover($this->url);
+        if ($this->endpoint === null) {
+            $this->endpoint = $this->discover($this->url);
         }
 
         $sign = '?';
-        if ($query = parse_url($this->api, PHP_URL_QUERY)) {
+        if ($query = parse_url($this->endpoint, PHP_URL_QUERY)) {
             $sign = '&';
 
             parse_str($query, $parameters);
@@ -146,7 +182,7 @@ class OEmbed
         }
 
         $client = new Client(
-            sprintf('%s%s%s', $this->api, $sign, http_build_query($parameters))
+            sprintf('%s%s%s', $this->endpoint, $sign, http_build_query($parameters))
         );
 
         $data = $client->send();
@@ -178,37 +214,36 @@ class OEmbed
     }
 
     /**
-     * Discover an oEmbed API
+     * Discover an oEmbed API endpoint
      *
      * @param string $url The URL to attempt to discover Omlex for
      *
      * @return string The oEmbed API endpoint discovered
      *
-     * @throws \InvalidArgumentException If the $url is invalid
+     * @throws \InvalidArgumentException If not $endpoint was found
      */
     protected function discover($url)
     {
-        $client = new Client($url);
+        $endpoint = null;
 
-        $body = $client->send();
-
-        // Find all <link /> tags that have a valid oembed type set. We then
-        // extract the href attribute for each type.
-        $regexp = '#<link([^>]*)type=[^"]*"'.
-                  '(application/json|text/xml)\+oembed"([^>]*)>#i';
-
-        $matches = $result = array();
-        if (!preg_match_all($regexp, $body, $matches)) {
-            throw new \InvalidArgumentException('No valid oEmbed links found on page.');
-        }
-
-        foreach ($matches[0] as $key => $link) {
-            $hrefs = array();
-            if (preg_match('/href=[^"]*"([^"]+)"/i', $link, $hrefs)) {
-                $result[$matches[2][$key]] = $hrefs[1];
+        // try to find a provider matching the supplied URL if no one has been supplied
+        foreach ($this->providers as $provider) {
+            if ($provider->match($url)) {
+                $endpoint = $provider->getEndpoint();
+                break;
             }
         }
 
-        return (isset($result['application/json']) ? $result['application/json'] : array_pop($result));
+        // if no provider was found, try to discover the endpoint URL
+        if (!$endpoint) {
+            $discover = new Discoverer();
+            $endpoint = $discover->getEndpointForUrl($url);
+        }
+
+        if (!$endpoint) {
+            throw new \InvalidArgumentException('No oEmbed links found.');
+        }
+
+        return $endpoint;
     }
 }

@@ -106,9 +106,7 @@ class OEmbedTest extends \PHPUnit_Framework_TestCase
      */
     protected function getObject(array $test)
     {
-        $Omlex = new OEmbed($test['url'], array(
-             OEmbed::OPTION_API => $test['api']
-        ));
+        $Omlex = new OEmbed($test['url'], $test['api']);
 
         return $Omlex->getObject();
     }
