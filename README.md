@@ -1,4 +1,7 @@
-Omlex is a lightweight PHP 5.3 library for handling oEmbed services.
+Omlex
+=====
+
+This is a lightweight PHP 5.3 library for handling oEmbed services.
 
 ```php
 <?php
@@ -83,3 +86,9 @@ Omlex is tested using PHPUnit. The run the test suite, execute the following
 command:
 
     $ phpunit test/
+
+## Integration
+
+  - **With Symfony2**: Seamless integration with Symfony2 is provided by the [EWZOmlexBundle][1].
+
+[1]: https://github.com/excelwebzone/EWZOmlexBundle
