@@ -73,7 +73,7 @@ namespace Omlex;
             $this->pattern = self::buildPatternFromScheme($this);
         }
 
-        return (bool) preg_match($this->pattern, $url);
+        return (bool) preg_match($this->pattern, $url);
     }
 
     /**
