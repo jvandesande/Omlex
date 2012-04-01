@@ -23,7 +23,7 @@ class Viddler extends Provider
     /**
      * {@inheritdoc}
      */
-    public function __construct($endpoint, array $schemes = array(), $url = null, $name = null)
+    public function __construct($endpoint = null, array $schemes = array(), $url = null, $name = null)
     {
         return parent::__construct(
             'http://lab.viddler.com/services/oembed/',

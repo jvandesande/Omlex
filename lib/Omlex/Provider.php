@@ -54,7 +54,7 @@ class Provider
      * @param string $url      The website URL
      * @param string $name     The provider name
      */
-    public function __construct($endpoint, array $schemes = array(), $url = null, $name = null)
+    public function __construct($endpoint = null, array $schemes = array(), $url = null, $name = null)
     {
         foreach ($schemes as $key => $scheme) {
             if (!is_object($scheme) || !($scheme instanceof URLScheme)) {

@@ -23,7 +23,7 @@ class Vimeo extends Provider
     /**
      * {@inheritdoc}
      */
-    public function __construct($endpoint, array $schemes = array(), $url = null, $name = null)
+    public function __construct($endpoint = null, array $schemes = array(), $url = null, $name = null)
     {
         return parent::__construct(
             'http://www.vimeo.com/api/oembed.json', //or xml
