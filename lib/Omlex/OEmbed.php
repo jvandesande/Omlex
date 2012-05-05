@@ -82,8 +82,17 @@ class OEmbed
         }
 
         $this->providers = array(
-            new Provider\YouTube(),
             new Provider\Flickr(),
+            new Provider\Hulu(),
+            new Provider\iFixt(),
+            new Provider\PollEverywhere(),
+            new Provider\Qik(),
+            new Provider\Revision3(),
+            new Provider\SlideShare(),
+            new Provider\SmugMug(),
+            new Provider\Viddler(),
+            new Provider\Vimeo(),
+            new Provider\YouTube(),
         );
 
         foreach ($providers as $provider) {
