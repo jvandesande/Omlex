@@ -84,7 +84,7 @@ class OEmbed
         $this->providers = array(
             new Provider\Flickr(),
             new Provider\Hulu(),
-            new Provider\iFixt(),
+            new Provider\iFixit(),
             new Provider\PollEverywhere(),
             new Provider\Qik(),
             new Provider\Revision3(),
