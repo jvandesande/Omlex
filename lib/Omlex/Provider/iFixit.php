@@ -28,7 +28,7 @@ class iFixit extends Provider
         return parent::__construct(
             'http://www.ifixit.com/Embed',
             array(
-                'http://www.ifixit.com/Guide/View/*',
+                'http://*.ifixit.com/Guide/View/*',
             ),
             'http://www.ifixit.com',
             'iFixit'

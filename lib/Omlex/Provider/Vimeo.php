@@ -28,8 +28,8 @@ class Vimeo extends Provider
         return parent::__construct(
             'http://www.vimeo.com/api/oembed.json', //or xml
             array(
-                'http://www.vimeo.com/*',
-                'http://www.vimeo.com/groups/*/*',
+                'http://*.vimeo.com/*',
+                'http://*.vimeo.com/groups/*/*',
             ),
             'http://www.vimeo.com',
             'Vimeo'

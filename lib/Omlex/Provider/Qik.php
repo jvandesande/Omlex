@@ -28,8 +28,8 @@ class Qik extends Provider
         return parent::__construct(
             'http://qik.com/api/oembed.json', //or xml
             array(
-                'http://qik.com/video/*',
-                'http://qik.com/*',
+                'http://*.qik.com/video/*',
+                'http://*.qik.com/*',
             ),
             'http://www.qik.com',
             'Qik'

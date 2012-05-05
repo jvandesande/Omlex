@@ -28,7 +28,7 @@ class SlideShare extends Provider
         return parent::__construct(
             'http://www.slideshare.net/api/oembed/2',
             array(
-                'http://www.slideshare.net/*/*',
+                'http://*.slideshare.net/*/*',
             ),
             'http://www.slideshare.net',
             'SlideShare'

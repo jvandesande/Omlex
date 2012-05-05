@@ -28,7 +28,7 @@ class Hulu extends Provider
         return parent::__construct(
             'http://www.hulu.com/api/oembed.json', //or xml
             array(
-                'http://www.hulu.com/watch/*',
+                'http://*.hulu.com/watch/*',
             ),
             'http://www.hulu.com',
             'Hulu'

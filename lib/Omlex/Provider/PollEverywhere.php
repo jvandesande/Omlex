@@ -28,9 +28,9 @@ class PollEverywhere extends Provider
         return parent::__construct(
             'http://www.polleverywhere.com/services/oembed/',
             array(
-                'http://www.polleverywhere.com/polls/*',
-                'http://www.polleverywhere.com/multiple_choice_polls/*',
-                'http://www.polleverywhere.com/free_text_polls/*',
+                'http://*.polleverywhere.com/polls/*',
+                'http://*.polleverywhere.com/multiple_choice_polls/*',
+                'http://*.polleverywhere.com/free_text_polls/*',
             ),
             'http://www.polleverywhere.com',
             'Poll Everywhere'
