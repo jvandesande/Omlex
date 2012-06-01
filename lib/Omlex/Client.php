@@ -66,8 +66,8 @@ class Client
         }
 
         $code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-        if (200 > $code || $code >= 300) {
-            throw new \RuntimeException('Non-2xx code was returned.');
+        if ((200 > $code || $code >= 300) && $code !== 304) {
+            throw new \RuntimeException('Url '.$this->url.' returned invalid code '.$code);
         }
 
         curl_close($curl);
