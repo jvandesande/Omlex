@@ -116,6 +116,7 @@ class OEmbed
         }
 
         $this->url = $url;
+        $this->endpoint = null;
     }
 
     /**
