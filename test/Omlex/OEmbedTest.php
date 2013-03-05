@@ -115,6 +115,55 @@ class OEmbedTest extends \PHPUnit_Framework_TestCase
         $object = $this->getObject($this->notFound);
     }
 
+    public function testRemoveProvider()
+    {
+        $omlex = new OEmbed();
+        $providers = $omlex->getProviders();
+
+        $providerCount = count($providers);
+        $omlex->removeProvider($providers[0]);
+        $this->assertEquals($providerCount - 1, count($omlex->getProviders()));
+    }
+
+    public function testAddProvider()
+    {
+        $omlex = new OEmbed(null, null, array(), false);
+        $yt = new \Omlex\Provider\YouTube();
+        $omlex->addProvider($yt);
+
+        $providers = $omlex->getProviders();
+        $this->assertEquals(1, count($providers));
+        $this->assertEquals($yt, $providers[0]);
+    }
+
+    public function testClearProviders()
+    {
+        $omlex = new OEmbed();
+        $this->assertNotEmpty($omlex->getProviders());
+        $omlex->clearProviders();
+        $this->assertEmpty($omlex->getProviders());
+    }
+
+    public function testDiscovery()
+    {
+        $omlex = new OEmbed();
+        $this->assertEquals(true, $omlex->getDiscovery());
+        $omlex->setDiscovery(false);
+
+        $this->assertEquals(false, $omlex->getDiscovery());
+    }
+
+    public function testDiscoverer()
+    {
+        $omlex = new OEmbed();
+        $this->assertNull($omlex->getDiscoverer());
+
+        $discoverer = new Discoverer();
+        $omlex->setDiscoverer($discoverer);
+
+        $this->assertEquals($discoverer, $omlex->getDiscoverer());
+    }
+
     /**
      * Get the Omlex object
      *

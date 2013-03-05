@@ -78,8 +78,9 @@ class OEmbed
      * @param string $url       The URL to fetch from
      * @param string $endpoint  The API endpoint
      * @param array  $providers Additional providers
+     * @param bool   $useDefaultProviders whether the default providers should be used.
      */
-    public function __construct($url = null, $endpoint = null, array $providers = array())
+    public function __construct($url = null, $endpoint = null, array $providers = array(), $useDefaultProviders = true)
     {
         if ($url) {
             $this->setURL($url);
@@ -89,6 +90,24 @@ class OEmbed
             $this->endpoint = $endpoint;
         }
 
+        if ($useDefaultProviders) {
+            $this->registerDefaultProviders();
+        }
+
+        foreach ($providers as $provider) {
+            if (is_array($provider) || $provider instanceof Provider) {
+                $this->addProvider($provider);
+            }
+        }
+    }
+
+    /**
+     * Registers the default providers (clears all current providers).
+     *
+     * @return OEmbed
+     */
+    public function registerDefaultProviders()
+    {
         $this->providers = array(
             new Provider\Flickr(),
             new Provider\Hulu(),
@@ -103,11 +122,7 @@ class OEmbed
             new Provider\YouTube(),
         );
 
-        foreach ($providers as $provider) {
-            if (is_array($provider) || $provider instanceof Provider) {
-                $this->addProvider($provider);
-            }
-        }
+        return $this;
     }
 
     /**
@@ -182,7 +197,7 @@ class OEmbed
     /**
      * Add provider
      *
-     * @param mix $provider The provider
+     * @param array|Provider $provider The provider
      */
     public function addProvider($provider)
     {
@@ -198,6 +213,48 @@ class OEmbed
                 $provider['name']
             );
         }
+    }
+
+    /**
+     * Removes the given provider from the registered providers array.
+     *
+     * @param Provider $provider the provider to remove.
+     *
+     * @return OEmbed
+     */
+    public function removeProvider(Provider $provider)
+    {
+        $index = array_search($provider, $this->providers);
+
+        if ($index !== false) {
+            unset($this->providers[$index]);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Returns the registered providers.
+     *
+     * @return array array containing the registered Provider instances.
+     *
+     * @see Provider
+     */
+    public function getProviders()
+    {
+        return $this->providers;
+    }
+
+    /**
+     * Clears all registered providers.
+     *
+     * @return OEmbed
+     */
+    public function clearProviders()
+    {
+        $this->providers = array();
+
+        return $this;
     }
 
     /**
