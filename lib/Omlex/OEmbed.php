@@ -63,6 +63,14 @@ class OEmbed
      * @var array
      */
     protected $providers = array();
+    /**
+     * @var bool
+     */
+    protected $discovery = true;
+    /**
+     * @var Discoverer
+     */
+    protected $discoverer;
 
     /**
      * Constructor
@@ -101,6 +109,58 @@ class OEmbed
             }
         }
     }
+
+    /**
+     * Whether discovery should be used if no provider could be found for the given url.
+     *
+     * @param boolean $discovery true if discovery should be used, false otherwise.
+     *
+     * @return OEmbed
+     */
+    public function setDiscovery($discovery)
+    {
+        $this->discovery = $discovery;
+
+        return $this;
+    }
+
+    /**
+     * Returns whether discovery is used if no provider could be found for a given url.
+     *
+     * @return boolean true if discovery is enabled, false otherwise.
+     */
+    public function getDiscovery()
+    {
+        return $this->discovery;
+    }
+
+    /**
+     * Sets the Discoverer that should be used for discovery of oEmbed endpoints.
+     * If no discoverer is set, the default Omlex Discoverer is used.
+     *
+     * @param \Omlex\Discoverer $discoverer the discover that should be used for discovery of oEmbed endpoints.
+     *
+     * @return OEmbed
+     * @see Discoverer
+     */
+    public function setDiscoverer(Discoverer $discoverer = null)
+    {
+        $this->discoverer = $discoverer;
+
+        return $this;
+    }
+
+    /**
+     * Returns the discoverer that is used for discovery of oEmbed endpoints.
+     *
+     * @return \Omlex\Discoverer
+     */
+    public function getDiscoverer()
+    {
+        return $this->discoverer;
+    }
+
+
 
     /**
      * Set a URL to fetch from
@@ -209,7 +269,7 @@ class OEmbed
             case 'xml':
                 libxml_use_internal_errors(true);
                 $data = simplexml_load_string($data);
-                if (!$data instanceof SimpleXMLElement) {
+                if (!$data instanceof \SimpleXMLElement) {
                     $errors = libxml_get_errors();
                     $error  = array_shift($errors);
                     libxml_clear_errors();
@@ -234,18 +294,10 @@ class OEmbed
      */
     protected function discover($url)
     {
-        $endpoint = null;
-
-        // try to find a provider matching the supplied URL if no one has been supplied
-        foreach ($this->providers as $provider) {
-            if ($provider->match($url)) {
-                $endpoint = $provider->getEndpoint();
-                break;
-            }
-        }
+        $endpoint = $this->findEndpointFromProviders($url);
 
         // if no provider was found, try to discover the endpoint URL
-        if (!$endpoint) {
+        if ($this->discovery && !$endpoint) {
             $discover = new Discoverer();
             $endpoint = $discover->getEndpointForUrl($url);
         }
@@ -255,5 +307,26 @@ class OEmbed
         }
 
         return $endpoint;
+    }
+
+    /**
+     * Finds an endpoint by looping trough the providers array and matching the url against
+     * the allowed schemes for each provider.
+     *
+     * @param string $url the url to find an endpoint for.
+     *
+     * @return string|null the endpoint if a match was found, null if no suitable provider was found.
+     */
+    protected function findEndpointFromProviders($url)
+    {
+        // try to find a provider matching the supplied URL if no one has been supplied
+        foreach ($this->providers as $provider) {
+            /** @var $provider Provider */
+            if ($provider->match($url)) {
+                return $provider->getEndpoint();
+            }
+        }
+
+        return null;
     }
 }
