@@ -18,26 +18,26 @@ class OEmbedTest extends \PHPUnit_Framework_TestCase
             'url' => 'http://www.flickr.com/photos/jtellolopez/2656764466/',
             'api' => 'http://www.flickr.com/services/oembed/',
             'expected' => array(
-                'version'       => '1.0'
-                'type]'         => 'photo'
+                'version'       => '1.0',
+                'type'         => 'photo',
                 'author_url'    => 'http://www.flickr.com/photos/24887479@N06/',
                 'cache_age'     => 3600,
                 'provider_name' => 'Flickr',
                 'provider_url'  => 'http://www.flickr.com/',
                 'title'         => 'Torrie Wilson',
                 'author_name'   => 'jtellolopez',
-                'width'         => '411',
-                'height'        => '500',
-                'url'           => 'http://farm4.static.flickr.com/3245/2656764466_afa90677e1.jpg',
+                'width'         => '842',
+                'height'        => '1024',
+                'url'           => 'http://farm4.staticflickr.com/3245/2656764466_afa90677e1_b.jpg',
             )
         ),
         'video' => array(
             'url' => 'http://www.youtube.com/watch?v=ReSxgDpAJwk',
-            'api' => 'http://lab.youtube.com/oembed/',
+            'api' => 'http://www.youtube.com/oembed/',
             'expected' => array(
                 'provider_url'     => 'http://www.youtube.com/',
                 'title'            => 'torrie wilson vs trish stratus',
-                'html'             => '<object width="459" height="344"><param name="movie" value="http://www.youtube.com/v/ReSxgDpAJwk?version=3&feature=oembed"></param><param name="allowFullScreen" value="true"></param><param name="allowscriptaccess" value="always"></param><embed src="http://www.youtube.com/v/ReSxgDpAJwk?version=3&feature=oembed" type="application/x-shockwave-flash" width="459" height="344" allowscriptaccess="always" allowfullscreen="true"></embed></object>',
+                'html'             => '<iframe width="459" height="344" src="http://www.youtube.com/embed/ReSxgDpAJwk?feature=oembed" frameborder="0" allowfullscreen></iframe>',
                 'author_name'      => 'johnnyg08',
                 'height'           => 344,
                 'thumbnail_width'  => 480,
@@ -63,6 +63,16 @@ class OEmbedTest extends \PHPUnit_Framework_TestCase
     );
 
     /**
+     * An object that does not exist
+     *
+     * @var array
+     */
+    protected $notFound = array(
+        'url' => 'http://www.flickr.com/photos/jtellolopez/265676446621323/',
+        'api' => 'http://www.flickr.com/services/oembed/'
+    );
+
+    /**
      * Test fetching all of the objects
      *
      * @return void
@@ -73,7 +83,7 @@ class OEmbedTest extends \PHPUnit_Framework_TestCase
             $object = $this->getObject($test);
 
             $expectedObject = '\\Omlex\\Object\\' . ucfirst($type);
-            $this->assertEquals($expectedObject, get_class($object));
+            $this->assertInstanceof($expectedObject, $object);
 
             foreach ($test['expected'] as $key => $val) {
                 $this->assertEquals($val, $object->$key, sprintf('Unexpected %s value for object type %s', $key, $type));
@@ -95,6 +105,14 @@ class OEmbedTest extends \PHPUnit_Framework_TestCase
         }
 
         $this->fail('An expected exception has not been raised.');
+    }
+
+    /**
+     * @expectedException RuntimeException
+     */
+    public function testNotFoundError()
+    {
+        $object = $this->getObject($this->notFound);
     }
 
     /**

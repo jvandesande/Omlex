@@ -42,7 +42,7 @@ class ClassLoader
             set_error_handler(array($this, 'handleIncludeError'));
             $exists = include $this->path.'/'.str_replace('\\', '/', $class).'.php';
             restore_error_handler();
-            return $exists;
+            return (bool) $exists;
         }
     }
 
